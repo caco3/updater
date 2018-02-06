@@ -813,6 +813,10 @@ EOF;
 		$this->silentLog('[info] end of replaceEntryPoints()');
 	}
 
+	function sortByLength($a,$b){
+                return strlen($b)-strlen($a);
+        }
+	
 	/**
 	 * Recursively deletes the specified folder from the system
 	 *
@@ -841,10 +845,13 @@ EOF;
 		foreach ($files as $file) {
 			unlink($file);
 		}
+		usort($directories, 'sortByLength');
 		foreach ($directories as $dir) {
+			$this->recursiveDelete($dir); //There might be other files/folders in that folder, delete them first
 			rmdir($dir);	
 		}
 		
+		$this->recursiveDelete($folder); //There might be other files/folders in that folder, delete them first
 		$state = rmdir($folder);
 		if($state === false) {
 			throw new \Exception('Could not rmdir ' . $folder);
@@ -931,6 +938,7 @@ EOF;
 					throw new \Exception('Could not unlink: '.$path);
 				}
 			} elseif($fileInfo->isDir()) {
+                                $this->recursiveDelete($path); //There might be other files/folders in that folder, delete them first
 				$state = rmdir($path);
 				if($state === false) {
 					throw new \Exception('Could not rmdir: '.$path);
@@ -986,6 +994,7 @@ EOF;
 				}
 			}
 			if($fileInfo->isDir()) {
+                                $this->recursiveDelete($path); //There might be other files/folders in that folder, delete them first
 				$state = rmdir($path);
 				if($state === false) {
 					throw new \Exception('Could not rmdir ' . $path);
